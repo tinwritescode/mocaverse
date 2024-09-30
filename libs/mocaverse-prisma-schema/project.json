@@ -1,0 +1,28 @@
+{
+  "name": "mocaverse-prisma-schema",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/mocaverse-prisma-schema/src",
+  "projectType": "library",
+  "tags": [],
+  "// targets": "to see all targets run: nx show project mocaverse-prisma-schema --web",
+  "targets": {
+    "prisma": {
+      "command": "prisma",
+      "options": {
+        "cwd": "libs/mocaverse-prisma-schema"
+      }
+    },
+    "migrate": {
+      "command": "prisma migrate dev",
+      "options": {
+        "cwd": "libs/mocaverse-prisma-schema"
+      }
+    },
+    "generate-types": {
+      "command": "prisma generate",
+      "options": {
+        "cwd": "libs/mocaverse-prisma-schema"
+      }
+    }
+  }
+}

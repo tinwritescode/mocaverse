@@ -1,0 +1,8 @@
+{
+  "name": "auth-handler",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/feature-auth/handler/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {}
+}

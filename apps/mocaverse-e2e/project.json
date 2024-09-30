@@ -1,0 +1,9 @@
+{
+  "name": "mocaverse-e2e",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/mocaverse-e2e/src",
+  "implicitDependencies": ["mocaverse"],
+  "// targets": "to see all targets run: nx show project mocaverse-e2e --web",
+  "targets": {}
+}

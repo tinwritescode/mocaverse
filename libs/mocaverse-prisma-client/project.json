@@ -1,0 +1,19 @@
+{
+  "name": "mocaverse-prisma-client",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/mocaverse-prisma-client/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/mocaverse-prisma-client",
+        "main": "libs/mocaverse-prisma-client/src/index.ts",
+        "tsConfig": "libs/mocaverse-prisma-client/tsconfig.lib.json",
+        "assets": ["libs/mocaverse-prisma-client/*.md"]
+      }
+    }
+  }
+}

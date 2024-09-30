@@ -1,0 +1,112 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_ONE_URL")
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+model User {
+  id   String  @id @default(cuid())
+  name String? @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  providers    Provider[]
+  RefreshToken RefreshToken[]
+}
+
+enum ProviderType {
+  EVM_WALLET
+  EMAIL
+}
+
+model Provider {
+  id   String       @id @default(cuid())
+  type ProviderType
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+
+  inviteCode   InviteCode @relation(fields: [inviteCodeId], references: [id])
+  inviteCodeId String
+
+  EmailProvider EmailProvider?
+  EVMProvider   EVMProvider?
+
+  @@index([userId])
+}
+
+model EVMProvider {
+  id      String @id @default(cuid())
+  address String @unique
+
+  provider   Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  providerId String   @unique
+}
+
+model EmailProvider {
+  id       String @id @default(cuid())
+  email    String @unique
+  password String
+
+  provider   Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  providerId String   @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model NFT {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  image       String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model InviteCode {
+  id   String @id @default(cuid())
+  code String @unique
+
+  remaining Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  Provider Provider[]
+}
+
+// save incase we need to ban IPs
+model InviteCodeTries {
+  id   String @id @default(cuid())
+  ip   String
+  code String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([ip, code])
+}
+
+model RefreshToken {
+  id    String @id @default(cuid())
+  token String @unique
+
+  User   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
