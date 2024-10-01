@@ -55,6 +55,10 @@ export class AuthService {
       throw new ServerError('Invalid password', 401);
     }
 
+    if (!emailProvider.provider || !emailProvider.provider.userId) {
+      throw new ServerError('User not found', 404);
+    }
+
     const user = await this.db.user.findUnique({
       where: { id: emailProvider.provider.userId },
     });

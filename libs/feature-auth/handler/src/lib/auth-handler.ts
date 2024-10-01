@@ -1,19 +1,17 @@
 import { AuthService } from '@mocaverse/auth-service';
-import { ConfigService } from '@mocaverse/config-service';
-import { db } from '@mocaverse/mocaverse-prisma-client';
+import { ServerError } from '@mocaverse/core-interfaces';
 import { contract } from '@mocaverse/shared-api';
 import { initServer } from '@ts-rest/express';
 import { RouterImplementation } from '@ts-rest/express/src/lib/types';
-import { ServerError } from '@mocaverse/core-interfaces';
 
 const s = initServer();
 
-const configService = new ConfigService();
-const authService = new AuthService(configService, db);
+type AuthHandler = RouterImplementation<typeof contract.auth>;
 
-export const authHandler: RouterImplementation<typeof contract.auth> = s.router(
-  contract.auth,
-  {
+export const authHandler: (authService: AuthService) => AuthHandler = (
+  authService
+) =>
+  s.router(contract.auth, {
     loginWithEmail: async ({ body }) => {
       const { email, password } = body;
 
@@ -31,7 +29,6 @@ export const authHandler: RouterImplementation<typeof contract.auth> = s.router(
           },
         };
       } catch (error) {
-        console.error(error);
         if (error instanceof ServerError) {
           return {
             status: 400,
@@ -41,6 +38,7 @@ export const authHandler: RouterImplementation<typeof contract.auth> = s.router(
           };
         }
 
+        console.error(error);
         return {
           status: 500,
           body: {
@@ -68,7 +66,6 @@ export const authHandler: RouterImplementation<typeof contract.auth> = s.router(
           },
         };
       } catch (error) {
-        console.error(error);
         if (error instanceof ServerError) {
           return {
             status: 400,
@@ -78,6 +75,7 @@ export const authHandler: RouterImplementation<typeof contract.auth> = s.router(
           };
         }
 
+        console.error(error);
         return {
           status: 500,
           body: {
@@ -88,13 +86,22 @@ export const authHandler: RouterImplementation<typeof contract.auth> = s.router(
     },
     logout: async ({ body }) => {
       const { refreshToken } = body;
-      await authService.logout({ refreshToken });
-      return { status: 200, body: {} };
+      try {
+        await authService.logout({ refreshToken });
+        return { status: 200, body: {} };
+      } catch (error) {
+        console.error(error);
+        return {
+          status: 500,
+          body: {
+            error: 'Internal server error',
+          },
+        };
+      }
     },
-    refresh: {
-      middleware: [],
-      handler: async ({ body }) => {
-        const { refreshToken } = body;
+    refresh: async ({ body }) => {
+      const { refreshToken } = body;
+      try {
         const { accessToken, refreshToken: newRefreshToken } =
           await authService.refresh({
             refreshToken,
@@ -107,7 +114,23 @@ export const authHandler: RouterImplementation<typeof contract.auth> = s.router(
             refreshToken: newRefreshToken,
           },
         };
-      },
+      } catch (error) {
+        if (error instanceof ServerError) {
+          return {
+            status: 400,
+            body: {
+              error: error.message,
+            },
+          };
+        }
+
+        console.error(error);
+        return {
+          status: 500,
+          body: {
+            error: 'Internal server error',
+          },
+        };
+      }
     },
-  }
-);
+  });
