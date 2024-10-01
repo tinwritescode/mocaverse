@@ -19,13 +19,18 @@
       "@mocaverse/auth-service": ["libs/feature-auth/service/src/index.ts"],
       "@mocaverse/config-service": ["libs/config-service/src/index.ts"],
       "@mocaverse/core-interfaces": ["libs/core/interfaces/src/index.ts"],
+      "@mocaverse/feature-home-client": [
+        "libs/feature-home/client/src/index.ts"
+      ],
+      "@mocaverse/feature-home-hooks": ["libs/feature-home/hooks/src/index.ts"],
       "@mocaverse/mocaverse-prisma-client": [
         "libs/mocaverse-prisma-client/src/index.ts"
       ],
       "@mocaverse/mocaverse-prisma-schema": [
         "libs/mocaverse-prisma-schema/src/index.ts"
       ],
-      "@mocaverse/shared-api": ["libs/shared-api/src/index.ts"]
+      "@mocaverse/shared-api": ["libs/shared-api/src/index.ts"],
+      "@mocaverse/ui": ["libs/core/ui/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
