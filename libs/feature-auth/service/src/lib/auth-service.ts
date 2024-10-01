@@ -1,13 +1,20 @@
+import { ConfigService } from '@mocaverse/config-service';
+import { ServerError } from '@mocaverse/core-interfaces';
+import { PrismaClient } from '@prisma/client';
 import { compare } from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
-import { ConfigService } from '@mocaverse/config-service';
-import { PrismaClient } from '@prisma/client';
-import { ServerError } from '@mocaverse/core-interfaces';
+import ShortUniqueId from 'short-unique-id';
+
+type Config = {
+  INITIAL_REMAINING_INVITE_CODE: number;
+};
 
 export class AuthService {
+  private uid = new ShortUniqueId({ length: 6, dictionary: 'alphanum_upper' });
   constructor(
     private readonly configService: ConfigService,
-    private db: PrismaClient
+    private db: PrismaClient,
+    private config: Config
   ) {}
 
   private generateAccessToken(userId: number) {
@@ -28,6 +35,10 @@ export class AuthService {
         expiresIn: '7d',
       }
     );
+  }
+
+  private generateInviteCode() {
+    return this.uid.randomUUID();
   }
 
   async loginWithEmail({
@@ -91,28 +102,38 @@ export class AuthService {
         throw new ServerError('Email already exists', 409);
       }
 
-      const inviteCodeId = await tx.inviteCode
-        .findUnique({
-          where: { code: inviteCode },
-        })
-        .then((inviteCode) => inviteCode?.id);
+      const code = await tx.inviteCode.findUnique({
+        where: { code: inviteCode },
+      });
 
-      if (!inviteCodeId) {
+      if (!code) {
         throw new ServerError('Invalid invite code', 400);
       }
+
+      if (code.remaining <= 0) {
+        throw new ServerError('Invite code already used', 400);
+      }
+
+      const newInviteCode = this.generateInviteCode();
 
       const user = await tx.user.create({
         data: {
           providers: {
             create: {
               type: 'EMAIL',
-              inviteCodeId,
+              inviteCodeId: code.id,
               EmailProvider: {
                 create: {
                   email,
                   password,
                 },
               },
+            },
+          },
+          InviteCode: {
+            create: {
+              code: newInviteCode,
+              remaining: this.config.INITIAL_REMAINING_INVITE_CODE,
             },
           },
         },

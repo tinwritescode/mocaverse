@@ -10,6 +10,9 @@ async function main() {
 
   const users = await generateUsers();
   const inviteCodes = await generateInviteCodes(users.map((user) => user.id));
+
+  console.log(users);
+  console.log(inviteCodes);
 }
 
 async function generateUsers() {

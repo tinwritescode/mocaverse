@@ -12,7 +12,9 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 const configService = new ConfigService();
-const authService = new AuthService(configService, db);
+const authService = new AuthService(configService, db, {
+  INITIAL_REMAINING_INVITE_CODE: 10,
+});
 
 const s = initServer();
 const router = s.router(contract, {

@@ -1,82 +1,128 @@
-# Mocaverse
+# Mocaverse Invite Code System
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+## Table of Contents
+1. [Introduction](#introduction)
+2. [System Design](#system-design)
+   - [Invite Code Generation](#invite-code-generation)
+   - [Database Schema](#database-schema)
+   - [API Endpoints](#api-endpoints)
+3. [Implementation](#implementation)
+   - [Technologies Used](#technologies-used)
+   - [Project Structure](#project-structure)
+4. [Setup Instructions](#setup-instructions)
+   - [Prerequisites](#prerequisites)
+   - [Installation](#installation)
+   - [Running the Application](#running-the-application)
+5. [Testing](#testing)
+   - [Unit Tests](#unit-tests)
+   - [Integration Tests](#integration-tests)
+   - [Load Testing](#load-testing)
+6. [Design Decisions and Reasoning](#design-decisions-and-reasoning)
+   - [Invite Code Format](#invite-code-format)
+   - [Database Choice](#database-choice)
+   - [Concurrency Handling](#concurrency-handling)
+   - [Security Measures](#security-measures)
+7. [Future Improvements](#future-improvements)
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is almost ready ✨.
+## Introduction
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/getting-started/tutorials/react-monorepo-tutorial?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+The Mocaverse Invite Code System is a crucial component of the Mocaverse platform, responsible for managing invite codes that users can use to register and join the platform. This system ensures that new users have a valid invite code to access the platform and helps in managing the user growth and distribution.
 
-## Finish your remote caching setup
+## System Design
 
-[Click here to finish setting up your workspace!](https://cloud.nx.app/connect/I22W3RpLb1)
+### Invite Code Generation
 
+The Mocaverse Invite Code System uses a unique algorithm to generate invite codes. These codes are alphanumeric, case-sensitive, and have a fixed length to ensure uniqueness and security. The generation process takes into account factors such as timestamp and user ID to minimize the chance of collisions.
 
-## Run tasks
+### Database Schema
 
-To run the dev server for your app, use:
+The system utilizes a relational database to store and manage invite codes. The schema includes tables for users, invite codes, and their relationships. This structure allows for efficient tracking of code usage, remaining invites, and user associations.
 
-```sh
-npx nx serve mocaverse
-```
+### API Endpoints
 
-To create a production bundle:
+The system exposes several RESTful API endpoints for interacting with invite codes:
 
-```sh
-npx nx build mocaverse
-```
+- `POST /auth/register-with-email`: Register a new user with an invite code
+- `POST /auth/login-with-email`: Authenticate a user
+- `POST /auth/refresh`: Refresh an authentication token
+- `POST /auth/logout`: Log out a user
 
-To see all available targets to run for a project, run:
+## Implementation
 
-```sh
-npx nx show project mocaverse
-```
-        
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
+### Technologies Used
 
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+- Backend: Node.js with Express.js
+- Database: PostgreSQL with Prisma ORM
+- API Design: ts-rest for type-safe API contracts
+- Authentication: JSON Web Tokens (JWT)
+- Testing: Jest for unit and integration tests
 
-## Add new projects
+### Project Structure
 
-While you could add new projects to your workspace manually, you might want to leverage [Nx plugins](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) and their [code generation](https://nx.dev/features/generate-code?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) feature.
+The project follows a modular architecture using NX workspace:
 
-Use the plugin's generator to create new projects.
+- `libs/feature-auth`: Contains authentication-related modules
+- `libs/mocaverse-prisma-client`: Prisma client for database interactions
+- `libs/shared-api`: Shared API contracts
+- `apps/mocaverse-server`: Main server application
 
-To generate a new application, use:
+## Setup Instructions
 
-```sh
-npx nx g @nx/react:app demo
-```
+### Prerequisites
 
-To generate a new library, use:
+- Node.js (v14 or later)
+- pnpm package manager
+- PostgreSQL database
 
-```sh
-npx nx g @nx/react:lib mylib
-```
+### Installation
 
-You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
+1. Clone the repository
+2. Run `pnpm install` to install dependencies
+3. Set up environment variables (refer to `.env.example`)
+4. Run database migrations: `pnpm nx run mocaverse-prisma-schema:migrate`
 
-[Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+### Running the Application
 
+1. Start the server: `pnpm nx run mocaverse-server:serve`
+2. The API will be available at `http://localhost:3000`
 
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## Testing
 
-## Install Nx Console
+### Unit Tests
 
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
+Run unit tests with: `pnpm nx run-many -t test`
 
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+### Integration Tests
 
-## Useful links
+Run integration tests with: `pnpm nx run mocaverse-server-e2e:e2e`
 
-Learn more:
+### Load Testing
 
-- [Learn more about this workspace setup](https://nx.dev/getting-started/tutorials/react-monorepo-tutorial?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+(Instructions for load testing to be added)
 
-And join the Nx community:
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## Design Decisions and Reasoning
+
+### Invite Code Format
+
+We chose a 6-character alphanumeric format for invite codes, balancing uniqueness with user-friendliness. This format provides a large number of possible combinations while remaining easy for users to input.
+
+### Database Choice
+
+PostgreSQL was selected for its robustness, ACID compliance, and excellent support for complex queries and transactions, which are crucial for managing invite codes and user data.
+
+### Concurrency Handling
+
+The system uses database transactions to handle concurrent invite code usage, ensuring that each code is only used once and preventing race conditions.
+
+### Security Measures
+
+- Bcrypt for password hashing
+- JWT for secure authentication
+- Rate limiting on API endpoints to prevent abuse
+
+## Future Improvements
+
+1. Implement a caching layer for frequently accessed invite codes
+2. Add support for bulk invite code generation
+3. Develop an admin interface for invite code management
+4. Implement analytics to track invite code usage and user acquisition

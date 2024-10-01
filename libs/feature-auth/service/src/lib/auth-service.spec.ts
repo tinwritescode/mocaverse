@@ -23,7 +23,11 @@ describe('AuthService', () => {
     } as unknown as jest.Mocked<ConfigService>;
 
     prismock = new PrismockClient();
-    authService = new AuthService(mockConfigService, prismock);
+    authService = new AuthService(mockConfigService, prismock, {
+      INITIAL_REMAINING_INVITE_CODE: 10,
+    });
+
+    mockConfigService.getEnv.mockReturnValue({ JWT_SECRET: 'secret' });
 
     // Reset mocks before each test
     jest.resetAllMocks();
@@ -33,12 +37,10 @@ describe('AuthService', () => {
     it('should return tokens on successful login', async () => {
       const mockEmail = 'test@example.com';
       const mockPassword = 'password123';
-      const mockUserId = 'user123';
       const mockInviteCode = 'inviteCode123';
 
       await prismock.emailProvider.create({
         data: {
-          id: 'provider123',
           email: mockEmail,
           password: 'hashedPassword',
           provider: {
@@ -46,7 +48,6 @@ describe('AuthService', () => {
               type: 'EMAIL',
               User: {
                 create: {
-                  id: mockUserId,
                   name: 'Test User',
                 },
               },
@@ -54,6 +55,11 @@ describe('AuthService', () => {
                 create: {
                   code: mockInviteCode,
                   remaining: 10,
+                  User: {
+                    create: {
+                      name: 'Test User',
+                    },
+                  },
                 },
               },
             },
@@ -89,10 +95,29 @@ describe('AuthService', () => {
     it('should throw ServerError if password is incorrect', async () => {
       await prismock.emailProvider.create({
         data: {
-          id: 'provider123',
           email: 'test@example.com',
           password: 'hashedPassword',
-          providerId: 'provider123',
+          provider: {
+            create: {
+              type: 'EMAIL',
+              User: {
+                create: {
+                  name: 'Test User',
+                },
+              },
+              inviteCode: {
+                create: {
+                  code: 'inviteCode123',
+                  remaining: 10,
+                  User: {
+                    create: {
+                      name: 'Test User',
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
       });
 
@@ -105,25 +130,84 @@ describe('AuthService', () => {
         })
       ).rejects.toThrow(new ServerError('Invalid password', 401));
     });
+  });
 
-    it('should throw ServerError if user is not found', async () => {
-      await prismock.emailProvider.create({
+  describe('registerWithEmail', () => {
+    beforeEach(() => {
+      jest.resetAllMocks();
+      (jwt.sign as jest.Mock).mockReturnValue('mockToken');
+      mockConfigService.getEnv.mockReturnValue({ JWT_SECRET: 'secret' });
+    });
+
+    it('should create a new user with a unique invite code', async () => {
+      const mockEmail = 'test@example.com';
+      const mockPassword = 'password123';
+      const mockInviteCode = 'inviteCode123';
+
+      await prismock.user.create({
         data: {
-          id: 'provider123',
-          email: 'test@example.com',
-          password: 'hashedPassword',
-          providerId: 'provider123',
+          name: 'Test User',
+          InviteCode: {
+            create: {
+              code: mockInviteCode,
+              remaining: 10,
+            },
+          },
         },
       });
 
-      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+      const result = await authService.registerWithEmail({
+        email: mockEmail,
+        password: mockPassword,
+        inviteCode: mockInviteCode,
+      });
+
+      expect(result).toEqual({
+        accessToken: 'mockToken',
+        refreshToken: 'mockToken',
+      });
+    });
+
+    it('should throw ServerError if invite code is invalid', async () => {
+      const mockEmail = 'test@example.com';
+      const mockPassword = 'password123';
+      const mockInviteCode = 'invalidInviteCode';
 
       await expect(
-        authService.loginWithEmail({
-          email: 'test@example.com',
-          password: 'password123',
+        authService.registerWithEmail({
+          email: mockEmail,
+          password: mockPassword,
+          inviteCode: mockInviteCode,
         })
-      ).rejects.toThrow(new ServerError('User not found', 404));
+      ).rejects.toThrow(new ServerError('Invalid invite code', 400));
+    });
+
+    it('should throw ServerError if invite code is already used', async () => {
+      const mockEmail = 'test@example.com';
+      const mockPassword = 'password123';
+      const mockInviteCode = 'usedInviteCode';
+
+      await prismock.user.create({
+        data: {
+          name: 'Test User',
+          InviteCode: {
+            create: {
+              code: mockInviteCode,
+              remaining: 0,
+            },
+          },
+        },
+      });
+
+      (jwt.sign as jest.Mock).mockReturnValue('mockToken');
+
+      await expect(
+        authService.registerWithEmail({
+          email: mockEmail,
+          password: mockPassword,
+          inviteCode: mockInviteCode,
+        })
+      ).rejects.toThrow(new ServerError('Invite code already used', 400));
     });
   });
 
