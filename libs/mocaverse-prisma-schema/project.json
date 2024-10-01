@@ -23,6 +23,12 @@
       "options": {
         "cwd": "libs/mocaverse-prisma-schema"
       }
+    },
+    "push": {
+      "command": "prisma db push",
+      "options": {
+        "cwd": "libs/mocaverse-prisma-schema"
+      }
     }
   }
 }

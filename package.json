@@ -2,7 +2,12 @@
   "name": "@mocaverse/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "postinstall": "pnpm nx run-many -t generate-types",
+    "serve": "pnpm nx run-many -t serve",
+    "serve-server": "pnpm nx run mocaverse-server:serve",
+    "push": "pnpm nx run-many -t push"
+  },
   "private": true,
   "dependencies": {
     "@nx-tools/nx-prisma": "^6.1.0",

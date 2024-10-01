@@ -6,12 +6,14 @@
   "tags": [],
   "targets": {
     "build": {
-      "executor": "@nx/js:tsc",
+      "executor": "@nx/js:swc",
       "outputs": ["{options.outputPath}"],
+      "dependsOn": ["^build"],
       "options": {
         "outputPath": "dist/libs/feature-auth/service",
-        "main": "libs/feature-auth/service/src/index.ts",
         "tsConfig": "libs/feature-auth/service/tsconfig.lib.json",
+        "packageJson": "libs/feature-auth/service/package.json",
+        "main": "libs/feature-auth/service/src/index.ts",
         "assets": ["libs/feature-auth/service/*.md"]
       }
     }

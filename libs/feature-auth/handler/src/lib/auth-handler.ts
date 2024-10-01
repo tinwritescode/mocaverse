@@ -4,6 +4,7 @@ import { db } from '@mocaverse/mocaverse-prisma-client';
 import { contract } from '@mocaverse/shared-api';
 import { initServer } from '@ts-rest/express';
 import { RouterImplementation } from '@ts-rest/express/src/lib/types';
+import { ServerError } from '@mocaverse/core-interfaces';
 
 const s = initServer();
 
@@ -16,36 +17,74 @@ export const authHandler: RouterImplementation<typeof contract.auth> = s.router(
     loginWithEmail: async ({ body }) => {
       const { email, password } = body;
 
-      const { accessToken, refreshToken } = await authService.loginWithEmail({
-        email,
-        password,
-      });
+      try {
+        const { accessToken, refreshToken } = await authService.loginWithEmail({
+          email,
+          password,
+        });
 
-      return {
-        status: 200,
-        body: {
-          accessToken,
-          refreshToken,
-        },
-      };
+        return {
+          status: 200,
+          body: {
+            accessToken,
+            refreshToken,
+          },
+        };
+      } catch (error) {
+        console.error(error);
+        if (error instanceof ServerError) {
+          return {
+            status: 400,
+            body: {
+              error: error.message,
+            },
+          };
+        }
+
+        return {
+          status: 500,
+          body: {
+            error: 'Internal server error',
+          },
+        };
+      }
     },
     registerWithEmail: async ({ body }) => {
       const { email, password, inviteCode } = body;
-      const { accessToken, refreshToken } = await authService.registerWithEmail(
-        {
-          email,
-          password,
-          inviteCode,
-        }
-      );
 
-      return {
-        status: 200,
-        body: {
-          accessToken,
-          refreshToken,
-        },
-      };
+      try {
+        const { accessToken, refreshToken } =
+          await authService.registerWithEmail({
+            email,
+            password,
+            inviteCode,
+          });
+
+        return {
+          status: 200,
+          body: {
+            accessToken,
+            refreshToken,
+          },
+        };
+      } catch (error) {
+        console.error(error);
+        if (error instanceof ServerError) {
+          return {
+            status: 400,
+            body: {
+              error: error.message,
+            },
+          };
+        }
+
+        return {
+          status: 500,
+          body: {
+            error: 'Internal server error',
+          },
+        };
+      }
     },
     logout: async ({ body }) => {
       const { refreshToken } = body;

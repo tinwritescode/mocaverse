@@ -10,36 +10,23 @@
     "importHelpers": true,
     "target": "es2015",
     "module": "esnext",
-    "lib": [
-      "es2020",
-      "dom"
-    ],
+    "lib": ["es2020", "dom"],
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@mocaverse/auth-handler": [
-        "libs/feature-auth/handler/src/index.ts"
-      ],
-      "@mocaverse/auth-service": [
-        "libs/feature-auth/service/src/index.ts"
-      ],
-      "@mocaverse/config-service": [
-        "libs/config-service/src/index.ts"
-      ],
+      "@mocaverse/auth-handler": ["libs/feature-auth/handler/src/index.ts"],
+      "@mocaverse/auth-service": ["libs/feature-auth/service/src/index.ts"],
+      "@mocaverse/config-service": ["libs/config-service/src/index.ts"],
+      "@mocaverse/core-interfaces": ["libs/core/interfaces/src/index.ts"],
       "@mocaverse/mocaverse-prisma-client": [
         "libs/mocaverse-prisma-client/src/index.ts"
       ],
       "@mocaverse/mocaverse-prisma-schema": [
         "libs/mocaverse-prisma-schema/src/index.ts"
       ],
-      "@mocaverse/shared-api": [
-        "libs/shared-api/src/index.ts"
-      ],
+      "@mocaverse/shared-api": ["libs/shared-api/src/index.ts"]
     }
   },
-  "exclude": [
-    "node_modules",
-    "tmp"
-  ]
+  "exclude": ["node_modules", "tmp"]
 }

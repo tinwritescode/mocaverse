@@ -2,6 +2,7 @@ import { compare } from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
 import { ConfigService } from '@mocaverse/config-service';
 import { PrismaClient } from '@prisma/client';
+import { ServerError } from '@mocaverse/core-interfaces';
 
 export class AuthService {
   constructor(
@@ -37,35 +38,29 @@ export class AuthService {
     password: string;
   }) {
     const emailProvider = await this.db.emailProvider.findUnique({
-      where: {
-        email,
-      },
+      where: { email },
       include: {
         provider: {
-          select: {
-            userId: true,
-          },
+          select: { userId: true },
         },
       },
     });
 
     if (!emailProvider) {
-      throw new Error('Invalid email or password');
+      throw new ServerError('Invalid email or password', 401);
     }
 
     const isPasswordValid = await compare(password, emailProvider.password);
     if (!isPasswordValid) {
-      throw new Error('Invalid password');
+      throw new ServerError('Invalid password', 401);
     }
 
     const user = await this.db.user.findUnique({
-      where: {
-        id: emailProvider.provider.userId,
-      },
+      where: { id: emailProvider.provider.userId },
     });
 
     if (!user) {
-      throw new Error('User not found');
+      throw new ServerError('User not found', 404);
     }
 
     return {
@@ -85,25 +80,21 @@ export class AuthService {
   }) {
     const userId = await this.db.$transaction(async (tx) => {
       const emailProvider = await tx.emailProvider.findUnique({
-        where: {
-          email,
-        },
+        where: { email },
       });
 
       if (emailProvider) {
-        throw new Error('Email already exists');
+        throw new ServerError('Email already exists', 409);
       }
 
       const inviteCodeId = await tx.inviteCode
         .findUnique({
-          where: {
-            code: inviteCode,
-          },
+          where: { code: inviteCode },
         })
         .then((inviteCode) => inviteCode?.id);
 
       if (!inviteCodeId) {
-        throw new Error('Invalid invite code');
+        throw new ServerError('Invalid invite code', 400);
       }
 
       const user = await tx.user.create({
@@ -140,17 +131,15 @@ export class AuthService {
       ) as { userId: string; type: string };
 
       if (decoded.type !== 'refresh') {
-        throw new Error('Invalid token type');
+        throw new ServerError('Invalid token type', 401);
       }
 
       const user = await this.db.user.findUnique({
-        where: {
-          id: decoded.userId,
-        },
+        where: { id: decoded.userId },
       });
 
       if (!user) {
-        throw new Error('User not found');
+        throw new ServerError('User not found', 404);
       }
 
       return {
@@ -158,7 +147,7 @@ export class AuthService {
         refreshToken: this.generateRefreshToken(user.id),
       };
     } catch (error) {
-      throw new Error('Invalid refresh token');
+      throw new ServerError('Invalid refresh token', 401);
     }
   }
 

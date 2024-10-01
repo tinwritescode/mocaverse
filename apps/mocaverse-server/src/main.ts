@@ -14,3 +14,7 @@ const router = s.router(contract, {
 });
 
 createExpressEndpoints(contract, router, app);
+
+app.listen(3000, () => {
+  console.log('🚀 Server is running. http://localhost:3000');
+});
