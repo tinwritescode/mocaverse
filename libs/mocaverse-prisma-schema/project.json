@@ -29,6 +29,18 @@
       "options": {
         "cwd": "libs/mocaverse-prisma-schema"
       }
+    },
+    "seed": {
+      "command": "prisma db seed",
+      "options": {
+        "cwd": "."
+      }
+    },
+    "studio": {
+      "command": "prisma studio",
+      "options": {
+        "cwd": "libs/mocaverse-prisma-schema"
+      }
     }
   }
 }

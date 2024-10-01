@@ -85,5 +85,8 @@
     "typescript-eslint": "^8.0.0",
     "vite": "^5.0.0",
     "vitest": "^1.3.1"
+  },
+  "prisma": {
+    "seed": "ts-node libs/mocaverse-prisma-schema/prisma/seed.ts"
   }
 }

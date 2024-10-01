@@ -14,7 +14,7 @@ enum Role {
 }
 
 model User {
-  id   String  @id @default(cuid())
+  id   Int     @id @default(autoincrement())
   name String? @unique
 
   createdAt DateTime @default(now())
@@ -22,6 +22,8 @@ model User {
 
   providers    Provider[]
   RefreshToken RefreshToken[]
+
+  InviteCode InviteCode?
 }
 
 enum ProviderType {
@@ -30,16 +32,16 @@ enum ProviderType {
 }
 
 model Provider {
-  id   String       @id @default(cuid())
+  id   Int          @id @default(autoincrement())
   type ProviderType
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String
+  userId    Int
 
   inviteCode   InviteCode @relation(fields: [inviteCodeId], references: [id])
-  inviteCodeId String
+  inviteCodeId Int
 
   EmailProvider EmailProvider?
   EVMProvider   EVMProvider?
@@ -48,27 +50,27 @@ model Provider {
 }
 
 model EVMProvider {
-  id      String @id @default(cuid())
+  id      Int    @id @default(autoincrement())
   address String @unique
 
   provider   Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
-  providerId String   @unique
+  providerId Int      @unique
 }
 
 model EmailProvider {
-  id       String @id @default(cuid())
+  id       Int    @id @default(autoincrement())
   email    String @unique
   password String
 
   provider   Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
-  providerId String   @unique
+  providerId Int      @unique
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model NFT {
-  id          String   @id @default(cuid())
+  id          Int      @id @default(autoincrement())
   name        String
   description String
   image       String
@@ -77,7 +79,7 @@ model NFT {
 }
 
 model InviteCode {
-  id   String @id @default(cuid())
+  id   Int    @id @default(autoincrement())
   code String @unique
 
   remaining Int
@@ -86,6 +88,10 @@ model InviteCode {
   updatedAt DateTime @updatedAt
 
   Provider Provider[]
+  User     User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId   Int        @unique
+
+  @@index([code])
 }
 
 // save incase we need to ban IPs
@@ -101,11 +107,11 @@ model InviteCodeTries {
 }
 
 model RefreshToken {
-  id    String @id @default(cuid())
+  id    Int    @id @default(autoincrement())
   token String @unique
 
-  User   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId String
+  User   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId Int
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

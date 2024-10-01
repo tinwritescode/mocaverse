@@ -10,7 +10,7 @@ export class AuthService {
     private db: PrismaClient
   ) {}
 
-  private generateAccessToken(userId: string) {
+  private generateAccessToken(userId: number) {
     return jwt.sign(
       { userId, type: 'access' },
       this.configService.getEnv().JWT_SECRET,
@@ -20,7 +20,7 @@ export class AuthService {
     );
   }
 
-  private generateRefreshToken(userId: string) {
+  private generateRefreshToken(userId: number) {
     return jwt.sign(
       { userId, type: 'refresh' },
       this.configService.getEnv().JWT_SECRET,
@@ -132,7 +132,7 @@ export class AuthService {
       const decoded = jwt.verify(
         refreshToken,
         this.configService.getEnv().JWT_SECRET
-      ) as { userId: string; type: string };
+      ) as { userId: number; type: string };
 
       if (decoded.type !== 'refresh') {
         throw new ServerError('Invalid token type', 401);
