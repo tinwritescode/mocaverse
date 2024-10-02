@@ -23,7 +23,12 @@ model User {
   providers    Provider[]
   RefreshToken RefreshToken[]
 
-  InviteCode InviteCode?
+  // User use this to register a new account
+  InviteCode   InviteCode @relation("InviteeToInviter", fields: [inviteCodeId], references: [id])
+  inviteCodeId Int
+
+  // User use this invite code to share to others
+  InviterToInvitee InviteCode? @relation("InviterToInvitee")
 }
 
 enum ProviderType {
@@ -39,9 +44,6 @@ model Provider {
   updatedAt DateTime @updatedAt
   User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    Int
-
-  inviteCode   InviteCode @relation(fields: [inviteCodeId], references: [id])
-  inviteCodeId Int
 
   EmailProvider EmailProvider?
   EVMProvider   EVMProvider?
@@ -78,9 +80,13 @@ model InviteCode {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  Provider Provider[]
-  User     User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId   Int        @unique
+  // Use this to get user who owns this invite code
+  // Inviter can be null because we will have initial invite code that does not have inviter
+  Inviter   User? @relation("InviterToInvitee", fields: [inviterId], references: [id], onDelete: Cascade)
+  inviterId Int?  @unique
+
+  // Use this to get list of users who entered this invite code
+  Invitees User[] @relation("InviteeToInviter")
 
   @@index([code])
 }

@@ -111,7 +111,7 @@ describe('authHandler', () => {
       });
 
       const response = await request(app)
-        .post('/auth/refresh-token')
+        .post('/auth/refresh')
         .send({ refreshToken: 'mockRefreshToken' });
 
       expect(response.status).toBe(200);

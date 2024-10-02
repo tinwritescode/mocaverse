@@ -34,8 +34,8 @@ async function generateUsers() {
 
 async function generateInviteCodes(userId: number[]) {
   const { randomUUID } = new ShortUniqueId({
-    length: 6,
-    dictionary: 'alpha_upper',
+    length: 8,
+    dictionary: 'alphanum_upper',
   });
   const inviteCodes = Array.from({ length: 10 }, () => randomUUID());
 

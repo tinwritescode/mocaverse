@@ -10,7 +10,7 @@ type Config = {
 };
 
 export class AuthService {
-  private uid = new ShortUniqueId({ length: 6, dictionary: 'alphanum_upper' });
+  private uid = new ShortUniqueId({ length: 8, dictionary: 'alphanum_upper' });
   constructor(
     private readonly configService: ConfigService,
     private db: PrismaClient,
@@ -118,10 +118,10 @@ export class AuthService {
 
       const user = await tx.user.create({
         data: {
+          inviteCodeId: code.id,
           providers: {
             create: {
               type: 'EMAIL',
-              inviteCodeId: code.id,
               EmailProvider: {
                 create: {
                   email,
@@ -130,7 +130,7 @@ export class AuthService {
               },
             },
           },
-          InviteCode: {
+          InviterToInvitee: {
             create: {
               code: newInviteCode,
               remaining: this.config.INITIAL_REMAINING_INVITE_CODE,

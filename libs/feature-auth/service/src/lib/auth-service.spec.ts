@@ -6,6 +6,7 @@ import * as jwt from 'jsonwebtoken';
 import { AuthService } from './auth-service';
 import { DefaultArgs } from '.prisma/client/runtime/library';
 import { PrismaClient, Prisma } from '@prisma/client';
+import ShortUniqueId = require('short-unique-id');
 
 // Mock dependencies
 jest.mock('@mocaverse/config-service');
@@ -38,6 +39,15 @@ describe('AuthService', () => {
       const mockEmail = 'test@example.com';
       const mockPassword = 'password123';
       const mockInviteCode = 'inviteCode123';
+      const mockInviteCodeToCreate = 'inviteCode234';
+
+      // create one invite code
+      const inviteCode = await prismock.inviteCode.create({
+        data: {
+          code: mockInviteCode,
+          remaining: 10,
+        },
+      });
 
       await prismock.emailProvider.create({
         data: {
@@ -49,15 +59,15 @@ describe('AuthService', () => {
               User: {
                 create: {
                   name: 'Test User',
-                },
-              },
-              inviteCode: {
-                create: {
-                  code: mockInviteCode,
-                  remaining: 10,
-                  User: {
+                  InviteCode: {
+                    connect: {
+                      code: inviteCode.code,
+                    },
+                  },
+                  InviterToInvitee: {
                     create: {
-                      name: 'Test User',
+                      code: mockInviteCodeToCreate,
+                      remaining: 10,
                     },
                   },
                 },
@@ -93,6 +103,14 @@ describe('AuthService', () => {
     });
 
     it('should throw ServerError if password is incorrect', async () => {
+      // create one invite code
+      const inviteCode = await prismock.inviteCode.create({
+        data: {
+          code: 'inviteCode123',
+          remaining: 10,
+        },
+      });
+
       await prismock.emailProvider.create({
         data: {
           email: 'test@example.com',
@@ -103,15 +121,15 @@ describe('AuthService', () => {
               User: {
                 create: {
                   name: 'Test User',
-                },
-              },
-              inviteCode: {
-                create: {
-                  code: 'inviteCode123',
-                  remaining: 10,
-                  User: {
+                  InviteCode: {
+                    connect: {
+                      code: inviteCode.code,
+                    },
+                  },
+                  InviterToInvitee: {
                     create: {
-                      name: 'Test User',
+                      code: 'inviteCode234',
+                      remaining: 10,
                     },
                   },
                 },

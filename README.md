@@ -1,37 +1,77 @@
 # Mocaverse Invite Code System
 
-## Table of Contents
-1. [System Design](#system-design)
-   - [Invite Code Generation](#invite-code-generation)
-   - [Database Schema](#database-schema)
-   - [API Endpoints](#api-endpoints)
-2. [Implementation](#implementation)
-   - [Technologies Used](#technologies-used)
-   - [Project Structure](#project-structure)
-3. [Setup Instructions](#setup-instructions)
-   - [Prerequisites](#prerequisites)
-   - [Installation](#installation)
-   - [Running the Application](#running-the-application)
-4. [Testing](#testing)
-   - [Unit Tests](#unit-tests)
-   - [Integration Tests](#integration-tests)
-   - [Load Testing](#load-testing)
-5. [Design Decisions and Reasoning](#design-decisions-and-reasoning)
-   - [Invite Code Format](#invite-code-format)
-   - [Database Choice](#database-choice)
-   - [Concurrency Handling](#concurrency-handling)
-   - [Security Measures](#security-measures)
-6. [Future Improvements](#future-improvements)
-
 ## System Design
 
 ### Database Schema
 
-The system utilizes a relational database to store and manage invite codes. The schema includes tables for users, invite codes, and their relationships. This structure allows for efficient tracking of code usage, remaining invites, and user associations.
-
 <p align="center">
   <img src="./assets/database-schema.png" width="50%">
 </p>
+
+- One user can have one invite code (Inviter)
+- One invite code can be used by many users (InviteCode)
+- One user can has many refresh tokens (session management)
+- One user can has many providers (for future multi-login support)
+- A Provider has a type (ProviderType):
+  - EVM Wallet
+  - Email
+
+### Decision Reasoning
+#### Invite codes need to have a limit on usage (once or multiple times)
+
+| Options | Decision | Reasoning |
+|---------|----------|-----------|
+| Invite code can have two types: `ONCE` or `MULTIPLE` | ❌ | - We don't have lots of types of invite codes, so it's not worth having two types. |
+| Invite code has a remaining count (`remaining`), when it is used up (0), it is no longer valid | ✅ | - It is easier to implement and understand. |
+
+Decision made:
+- Invite code has a remaining count (`remaining`), when it is used up (0), it is no longer valid
+
+#### Invite codes should be hard to guess, but also not too hard to type
+
+| Consideration | Details |
+|---------------|---------|
+| User Base | ~1 million users |
+| Ease of Use | - Easy to type<br>- Avoid lowercase/uppercase confusion<br>- No special characters |
+| Security | Short but hard to guess |
+
+Decision made:
+- Format: 8 characters, alphanumeric, uppercase only
+- Collision rate: 0.002686% (pool of 36^8 = 2,821,109,907,456 combinations)
+- Benefits:
+  - Easy for users to input and communicate
+  - Reduced ambiguity by using only uppercase letters
+  - Frontend can auto-convert input to uppercase
+
+#### Invite codes are associated with a unique user account
+
+| Options | Decision | Reasoning |
+|---------|----------|-----------|
+| Invite code is associated with a unique email address (a provider) | ❌ | - If a user has multiple providers in the future, it would be difficult to determine which provider the invite code is for. |
+| Invite code is associated with a user | ✅ | - Allows for flexibility with multiple providers per user<br>- Simplifies tracking and management of invite codes |
+
+Decision made:
+- Invite code is associated with a user
+
+Reasoning:
+- If invite code is associated with a provider, in the future, if a user has many providers, it is hard to tell which provider the invite code is for.
+
+#### Invite codes should be trackable, admin should be able to know who the referrer is
+- invite code is associated with an inviter
+- initial invite code does not have inviter
+
+#### Design should be able to withstand high traffic and concurrency
+<p align="center">
+  <img src="./assets/concurrency.png" />
+</p>
+
+- Add index to `code` field to speed up the search
+- Let's say a database transaction may take 30ms (for example) for running `findFirst` and `update` methods (and network latency).
+- Request per second (RPS) = 1000 / 30 = 33.33
+
+#### Design should be hard to hack
+- Invite code is hard to guess, so it is hard to hack (because of the low collision rate)
+- We have a rate limit on API (register with email) to prevent abuse
 
 ### API Endpoints
 
@@ -52,15 +92,6 @@ The system exposes several RESTful API endpoints for interacting with invite cod
 - Authentication: JSON Web Tokens (JWT)
 - Testing: Jest for unit and integration tests
 
-### Project Structure
-
-The project follows a modular architecture using NX workspace:
-
-- `libs/feature-auth`: Contains authentication-related modules
-- `libs/mocaverse-prisma-client`: Prisma client for database interactions
-- `libs/shared-api`: Shared API contracts
-- `apps/mocaverse-server`: Main server application
-
 ## Setup Instructions
 
 ### Prerequisites
@@ -74,12 +105,28 @@ The project follows a modular architecture using NX workspace:
 1. Clone the repository
 2. Run `pnpm install` to install dependencies
 3. Set up environment variables (refer to `.env.example`)
-4. Run database migrations: `pnpm nx run mocaverse-prisma-schema:migrate`
+4. Push the database schema:
+   ```
+   pnpm nx run mocaverse-prisma-schema:push
+   ```
+5. Seed the database:
+   ```
+   pnpm nx run mocaverse-prisma-schema:seed
+   ```
 
 ### Running the Application
 
-1. Start the server: `pnpm nx run mocaverse-server:serve`
-2. The API will be available at `http://localhost:3000`
+1. Start the database using Docker Compose:
+   ```
+   docker-compose up -d
+   ```
+
+2. Start the server:
+   ```
+   pnpm nx run mocaverse-server:serve
+   ```
+
+3. The API will be available at `http://localhost:3000`
 
 ## Testing
 
@@ -87,27 +134,24 @@ The project follows a modular architecture using NX workspace:
 
 Run unit tests with: `pnpm nx run-many -t test`
 
+![alt text](./assets/unit-test.png)
+
+
 ### Integration Tests
 
 Run integration tests with: `pnpm nx run mocaverse-server-e2e:e2e`
 
-### Load Testing
-
-(Instructions for load testing to be added)
-
-## Design Decisions and Reasoning
-
-### Invite Code Format
-
-We chose a 6-character alphanumeric format for invite codes, balancing uniqueness with user-friendliness. This format provides a large number of possible combinations while remaining easy for users to input.
-
 ### Database Choice
 
-PostgreSQL was selected for its robustness, ACID compliance, and excellent support for complex queries and transactions, which are crucial for managing invite codes and user data.
+We chose PostgreSQL as our database system for the following reasons:
+- One of the most popular relational databases
+- Enough features for our system
+- Mature and well-documented
 
-### Concurrency Handling
-
-The system uses database transactions to handle concurrent invite code usage, ensuring that each code is only used once and preventing race conditions.
+We paired PostgreSQL with Prisma ORM due to:
+- Very strong type safety
+- Easy to add models, and it also handles database migrations
+- One of the best database ORM for TypeScript
 
 ### Security Measures
 
@@ -117,7 +161,5 @@ The system uses database transactions to handle concurrent invite code usage, en
 
 ## Future Improvements
 
-1. Implement a caching layer for frequently accessed invite codes
-2. Add support for bulk invite code generation
-3. Develop an admin interface for invite code management
-4. Implement analytics to track invite code usage and user acquisition
+- For larger amount of request per second, we need to use a more scalable database system, such as Redis.
+- Limit one user can only have one email provider
