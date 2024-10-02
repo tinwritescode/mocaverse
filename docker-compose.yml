@@ -9,7 +9,7 @@ services:
       POSTGRES_PASSWORD: randompassword
       POSTGRES_DB: mydb
     volumes:
-      - ./g3chain_db_data:/var/lib/postgresql
+      - ./mocaverse_db_data:/var/lib/postgresql
     ports:
       - 5434:5432
     networks:

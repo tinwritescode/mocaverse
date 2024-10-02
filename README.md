@@ -1,4 +1,15 @@
-# Mocaverse Invite Code System
+# Mocaverse Invite Code System (Backend)
+
+## Getting Started
+
+## 🖥️ Backend
+For backend setup and development instructions, refer to the sections below.
+
+## 🎨 Frontend
+For frontend-related information and setup, please check the [apps/mocaverse/README.md](apps/mocaverse/README.md) file.
+
+## 📜 Smart Contracts
+For smart-contract related information and setup, please check the [Mocaverse NFT Gate Repository](https://github.com/tinwritescode/mocaverse-nft-gate).
 
 ## System Design
 
@@ -105,23 +116,29 @@ The system exposes several RESTful API endpoints for interacting with invite cod
 1. Clone the repository
 2. Run `pnpm install` to install dependencies
 3. Set up environment variables (refer to `.env.example`)
-4. Push the database schema:
+4. Start the database using Docker Compose:
+   ```
+   docker-compose up -d
+   ```
+
+   This will start a PostgreSQL container and create a sample database `mocaverse` with the following credentials:
+   - Username: `johndoe`
+   - Password: `randompassword`
+   - Database: `mydb` 
+   - Port: `5434`
+
+5. Push the database schema:
    ```
    pnpm nx run mocaverse-prisma-schema:push
    ```
-5. Seed the database:
+6. Seed the database:
    ```
    pnpm nx run mocaverse-prisma-schema:seed
    ```
 
 ### Running the Application
 
-1. Start the database using Docker Compose:
-   ```
-   docker-compose up -d
-   ```
-
-2. Start the server:
+1. Start the server:
    ```
    pnpm nx run mocaverse-server:serve
    ```

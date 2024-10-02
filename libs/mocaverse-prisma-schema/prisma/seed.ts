@@ -8,17 +8,25 @@ async function main() {
     return;
   }
 
-  const users = await generateUsers();
-  const inviteCodes = await generateInviteCodes(users.map((user) => user.id));
+  const mockInviteCode = await generateInviteCodes({ total: 1 });
+  const users = await generateUsers({ inviteCodeId: mockInviteCode[0].id });
+  const inviteCodes = await generateInviteCodes({
+    userId: users.map((user) => user.id),
+  });
 
-  console.log(users);
-  console.log(inviteCodes);
+  if (users.length > 0) {
+    console.log(users);
+  }
+  if (inviteCodes.length > 0) {
+    console.log(inviteCodes);
+  }
 }
 
-async function generateUsers() {
+async function generateUsers({ inviteCodeId }: { inviteCodeId: number }) {
   const mockUsers = [
     {
       name: 'John Doe',
+      inviteCodeId: inviteCodeId,
     },
   ] satisfies Prisma.UserCreateManyInput[];
 
@@ -32,25 +40,34 @@ async function generateUsers() {
   return db.user.findMany();
 }
 
-async function generateInviteCodes(userId: number[]) {
+async function generateInviteCodes({
+  userId,
+  total = 10,
+}: {
+  userId?: number[];
+  total?: number;
+}) {
   const { randomUUID } = new ShortUniqueId({
     length: 8,
     dictionary: 'alphanum_upper',
   });
-  const inviteCodes = Array.from({ length: 10 }, () => randomUUID());
+  const inviteCodes = Array.from({ length: total }, () => randomUUID());
 
-  await db.inviteCode.createMany({
+  const result = await db.inviteCode.createManyAndReturn({
     data: inviteCodes.map((code) => ({
       code,
       remaining: Math.floor(Math.random() * 2),
-      userId: userId[Math.floor(Math.random() * userId.length)],
+      inviterId:
+        userId === undefined
+          ? undefined
+          : userId[Math.floor(Math.random() * userId.length)],
     })) satisfies Prisma.InviteCodeCreateManyInput[],
     skipDuplicates: true,
   });
 
   console.log(`Created ${inviteCodes.length} invite codes`);
 
-  return inviteCodes;
+  return result;
 }
 
 main()
