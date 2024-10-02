@@ -1,42 +1,37 @@
 # Mocaverse Invite Code System
 
 ## Table of Contents
-1. [Introduction](#introduction)
-2. [System Design](#system-design)
+1. [System Design](#system-design)
    - [Invite Code Generation](#invite-code-generation)
    - [Database Schema](#database-schema)
    - [API Endpoints](#api-endpoints)
-3. [Implementation](#implementation)
+2. [Implementation](#implementation)
    - [Technologies Used](#technologies-used)
    - [Project Structure](#project-structure)
-4. [Setup Instructions](#setup-instructions)
+3. [Setup Instructions](#setup-instructions)
    - [Prerequisites](#prerequisites)
    - [Installation](#installation)
    - [Running the Application](#running-the-application)
-5. [Testing](#testing)
+4. [Testing](#testing)
    - [Unit Tests](#unit-tests)
    - [Integration Tests](#integration-tests)
    - [Load Testing](#load-testing)
-6. [Design Decisions and Reasoning](#design-decisions-and-reasoning)
+5. [Design Decisions and Reasoning](#design-decisions-and-reasoning)
    - [Invite Code Format](#invite-code-format)
    - [Database Choice](#database-choice)
    - [Concurrency Handling](#concurrency-handling)
    - [Security Measures](#security-measures)
-7. [Future Improvements](#future-improvements)
-
-## Introduction
-
-The Mocaverse Invite Code System is a crucial component of the Mocaverse platform, responsible for managing invite codes that users can use to register and join the platform. This system ensures that new users have a valid invite code to access the platform and helps in managing the user growth and distribution.
+6. [Future Improvements](#future-improvements)
 
 ## System Design
-
-### Invite Code Generation
-
-The Mocaverse Invite Code System uses a unique algorithm to generate invite codes. These codes are alphanumeric, case-sensitive, and have a fixed length to ensure uniqueness and security. The generation process takes into account factors such as timestamp and user ID to minimize the chance of collisions.
 
 ### Database Schema
 
 The system utilizes a relational database to store and manage invite codes. The schema includes tables for users, invite codes, and their relationships. This structure allows for efficient tracking of code usage, remaining invites, and user associations.
+
+<p align="center">
+  <img src="./assets/database-schema.png" width="50%">
+</p>
 
 ### API Endpoints
 
@@ -70,7 +65,7 @@ The project follows a modular architecture using NX workspace:
 
 ### Prerequisites
 
-- Node.js (v14 or later)
+- Node.js (v18 or later)
 - pnpm package manager
 - PostgreSQL database
 
