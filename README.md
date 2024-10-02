@@ -5,7 +5,7 @@
 ### Database Schema
 
 <p align="center">
-  <img src="./assets/database-schema.png" width="50%">
+  <img src="./assets/database-schema.png" width="100%">
 </p>
 
 - One user can have one invite code (Inviter)

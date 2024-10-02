@@ -4,7 +4,7 @@
   "license": "MIT",
   "scripts": {
     "postinstall": "pnpm nx run-many -t generate-types",
-    "serve": "pnpm nx run-many -t serve",
+    "serve": "pnpm nx run-many -t serve -p",
     "serve-server": "pnpm nx run mocaverse-server:serve",
     "push": "pnpm nx run-many -t push"
   },

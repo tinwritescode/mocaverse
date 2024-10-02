@@ -13,7 +13,7 @@ import {
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 
-export default function ReservePage() {
+export function Page() {
   const [email, setEmail] = useState('');
   const [wallet, setWallet] = useState('');
   const [isLoading, setIsLoading] = useState(false);

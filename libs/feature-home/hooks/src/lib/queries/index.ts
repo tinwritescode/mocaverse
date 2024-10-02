@@ -9,21 +9,21 @@ export const useVerifyCode = () => {
   });
 };
 
-export const useIsEmailUsed = (email: string) => {
+export const useIsEmailUsed = (email?: string) => {
   return useQuery({
     queryKey: ['isEmailUsed', email] as const,
     queryFn: ({ queryKey: [_, email] }) => {
-      return getIsEmailUsed({ email });
+      return getIsEmailUsed({ email: email as NonNullable<typeof email> });
     },
     enabled: !!email,
   });
 };
 
-export const useIsWalletUsed = (wallet: string) => {
+export const useIsWalletUsed = (wallet?: string) => {
   return useQuery({
     queryKey: ['isWalletUsed', wallet] as const,
     queryFn: ({ queryKey: [_, wallet] }) => {
-      return getIsWalletUsed({ wallet });
+      return getIsWalletUsed({ wallet: wallet as NonNullable<typeof wallet> });
     },
     enabled: !!wallet,
   });

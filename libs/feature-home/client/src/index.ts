@@ -1,2 +1,2 @@
-export * from './lib/Home';
-export * from './lib/ReservePage';
+export * as home from './lib/pages/Home/Home';
+export * as reserve from './lib/pages/ReservePage';
