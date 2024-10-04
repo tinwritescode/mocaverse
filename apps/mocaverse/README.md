@@ -34,3 +34,4 @@ I use mock API in this project, the API is defined in `libs/feature-home/hooks/s
 - Split api to a separate library
 - Implement UI, zustand for authentication
 - Signature's message should get from backend
+- Add debounce (validation) for email field
