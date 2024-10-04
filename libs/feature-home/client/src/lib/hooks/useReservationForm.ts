@@ -1,3 +1,4 @@
+'use client';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   useConnectWallet,
@@ -6,8 +7,9 @@ import {
   useReserve,
   useVerifyCode,
 } from '@mocaverse/feature-home-hooks';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { useSignMessage } from 'wagmi';
 import * as z from 'zod';
 
 const inviteCodeSchema = z.object({
@@ -30,6 +32,8 @@ export function useReservationForm(
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
+  const { signMessageAsync } = useSignMessage();
+
   const form = useForm<FormData>({
     resolver: zodResolver(step === 1 ? inviteCodeSchema : walletAndEmailSchema),
     mode: 'onChange',
@@ -45,11 +49,13 @@ export function useReservationForm(
   const { data: isEmailUsed } = useIsEmailUsed(email);
   const { data: isWalletUsed } = useIsWalletUsed(address);
 
+  const inviteCodeRef = useRef<string | null>(null);
+
   useEffect(() => {
     if (isEmailUsed?.error) {
       form.setError('email', { message: 'Email is already used' });
     }
-    if (isWalletUsed?.error) {
+    if ((isWalletUsed as any)?.error) {
       form.setError('walletAddress', { message: 'Wallet is already used' });
     }
   }, [isEmailUsed, isWalletUsed]);
@@ -62,6 +68,8 @@ export function useReservationForm(
         if (isSuccess) {
           setStep(2);
           form.clearErrors();
+
+          inviteCodeRef.current = data.inviteCode;
         } else {
           setError('Invalid invite code');
         }
@@ -69,12 +77,21 @@ export function useReservationForm(
         setIsSubmitting(true);
         setError(null);
         try {
-          // await new Promise((resolve) => setTimeout(resolve, 2000));
+          const inviteCode = inviteCodeRef.current;
+
+          if (!inviteCode) {
+            throw new Error('Invite code is not set');
+          }
+
+          const signature = await signMessageAsync({
+            message: `${inviteCode}`, // TODO: get this message from backend
+          });
+
           const { isSuccess } = await reserve({
-            code: data.inviteCode,
+            code: inviteCode,
             email: data.email,
             wallet: data.walletAddress,
-            signature: '',
+            signature,
           });
           if (!isSuccess) {
             throw new Error('Failed to reserve');
@@ -82,6 +99,7 @@ export function useReservationForm(
 
           setSuccess(true);
         } catch (err) {
+          console.log(err);
           setError('An error occurred while submitting the form');
         } finally {
           setIsSubmitting(false);

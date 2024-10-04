@@ -35,14 +35,17 @@ export const getIsEmailUsed = async ({ email }: { email: string }) => {
 };
 
 export const getIsWalletUsed = async ({ wallet }: { wallet: string }) => {
+  return {
+    isSuccess: true,
+  };
   // random
-  return Math.random() > 0.5
-    ? {
-        isSuccess: true,
-      }
-    : {
-        error: 'Wallet is used',
-      };
+  // return Math.random() > 0.5
+  //   ? {
+  //       isSuccess: true,
+  //     }
+  //   : {
+  //       error: 'Wallet is used',
+  //     };
 
   // return axiosInstance.get('/api/isWalletUsed', { params: { wallet } });
 };

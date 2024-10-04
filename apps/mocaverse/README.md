@@ -19,6 +19,12 @@ Stack using in this project:
 - zod: modern and easy-to-use data validation library
 - react-hook-form (with zod resolver for form validation)
 
+## Testing guidelines
+
+- The valid code is: 123456
+- The valid email is: test@test.com
+- Wallet address is always valid. For invalid testing, please correct the mock API from [Mock API](./libs/feature-home/hooks/src/lib/queries/api.ts).
+
 ## API
 
 I use mock API in this project, the API is defined in `libs/feature-home/hooks/src/lib/queries/api.ts`. 
@@ -27,3 +33,4 @@ I use mock API in this project, the API is defined in `libs/feature-home/hooks/s
 
 - Split api to a separate library
 - Implement UI, zustand for authentication
+- Signature's message should get from backend
